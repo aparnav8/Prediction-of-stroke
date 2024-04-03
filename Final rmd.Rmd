@@ -1,0 +1,317 @@
+---
+title: "Stroke Project"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-12-12"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## LOADING DATASET 
+
+```{r}
+stroke.data <- read.csv("C:/Users/valiv/OneDrive/Desktop/Stats Proj/stroke-data.csv", na.strings="Unknown", stringsAsFactors=TRUE)
+```
+
+## VIEWING THE DATASET
+
+```{r}
+print(stroke.data)
+```
+## TO KNOW THE NUMBER OF ROWS AND COLUMNS
+
+```{r}
+dim(stroke.data)
+```
+## COLUMN NAMES
+
+```{r}
+head(stroke.data)
+```
+## DATA TYPE OF COLUMNS
+
+```{r}
+str(stroke.data)
+```
+## SUMMARY STATISTICS
+
+```{r}
+summary(stroke.data)
+```
+## EXPLORATORY DATA ANALYSIS(EDA)
+
+```{r}
+# column is named "stroke"
+stroke_positive_count <- sum(stroke.data$stroke == 1)
+stroke_negative_count <- sum(stroke.data$stroke == 0)
+total_cases <- nrow(stroke.data)
+
+stroke_positive_percentage <- (stroke_positive_count / total_cases) * 100
+
+cat("Total Cases:", total_cases, "\n")
+cat("Stroke Positive Cases:", stroke_positive_count, "\n")
+cat("Stroke Negative Cases:", stroke_negative_count, "\n")
+cat("Percentage of Stroke Positive Cases:", stroke_positive_percentage, "%\n")
+
+```
+## HISTOGRAM PLOT TO VIEW THE DISTRIBUTION OF BMI
+
+```{r}
+hist(stroke.data$bmi)
+```
+## HISTOGRAM TO VIEW THE BMI DISTRIBUTION IN STROKE POSITIVE PATIENTS
+```{r}
+# columns are named "bmi" and "stroke"
+library(ggplot2)
+ggplot(subset(stroke.data, stroke == 1), aes(x = bmi)) +
+  geom_histogram(binwidth = 1, fill = "blue", color = "black", alpha = 0.7) +
+  labs(title = "BMI Distribution of Stroke-Positive Patients",
+       x = "BMI",
+       y = "Frequency") +
+  theme_minimal()
+```
+## BAR GRAPH TO VIEW THE SMOKING STATUS DISTRIBUTION
+
+```{r}
+# Assuming your column is named "smoking_status"
+# Assuming your age column is named "age"
+
+library(ggplot2)
+
+# Filter data for age greater than or equal to 20
+filtered_data <- stroke.data[stroke.data$age >= 20,]
+
+ggplot(filtered_data, aes(x = factor(smoking_status))) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(title = "Smoking Status Distribution (Age >= 20)",
+       x = "Smoking Status",
+       y = "Frequency") +
+  theme_minimal()
+
+```
+## BAR GRAPH TO VIEW THE SMOKING STATUS DISTRIBUTION IN STROKE  POSITIVE PATIENTS
+
+```{r}
+# Assuming your columns are named "smoking_status" and "stroke"
+library(ggplot2)
+
+ggplot(subset(stroke.data, stroke == 1), aes(x = factor(smoking_status))) +
+  geom_bar(fill = "coral", color = "black") +
+  labs(title = "Smoking Status for Stroke-Positive Patients",
+       x = "Smoking Status",
+       y = "Frequency") +
+  theme_minimal()
+```
+## HISTOGRAM TO VIEW THE AGE DISTRIBUTION
+
+```{r}
+hist(stroke.data$age)
+```
+## BOXPLOT TO VIEW THE AGE DISTRIBUTION IN STROKE POSITIVE PATIENTS
+
+```{r}
+# Assuming your columns are named "age" and "stroke"
+library(ggplot2)
+
+ggplot(subset(stroke.data, stroke == 1), aes(x = factor(stroke), y = age)) +
+  geom_boxplot(fill = "lightgreen", color = "black") +
+  labs(title = "Distribution of Age for Stroke-Positive Patients",
+       x = "Stroke",
+       y = "Age") +
+  theme_minimal()
+```
+## BAR GRAPH TO VIEW THE GENDER DISTRIBUTION
+```{r}
+library(ggplot2)
+ggplot(stroke.data, aes(x = factor(gender))) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(title = "Distribution of Gender", x = "Gender", y = "Frequency") +
+  theme_minimal()
+```
+## BAR GRAPH TO VIEW THE GENDER DISTRIBUTION IN STROKE POSITIVE PATIENTS
+```{r}
+library(ggplot2)
+ggplot(subset(stroke.data, stroke == 1), aes(x = factor(stroke), fill = gender)) +
+  geom_bar(position = "dodge", color = "black") +
+  labs(title = "Distribution of Gender for Stroke-Positive Patients",
+       x = "Stroke",
+       y = "Frequency",
+       fill = "Gender") +
+  theme_minimal()
+```
+## statistical analysis for research questions
+
+## Question1
+
+```{r}
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data))  
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+# Performing Shapiro-Wilk test
+shapiro_test_result <- shapiro.test(sample_data$bmi)
+# Printing the result
+print(shapiro_test_result)
+# Checking if the p-value is less than 0.05
+if (shapiro_test_result$p.value < 0.05) {
+  cat("The BMI data is not normally distributed based on the Shapiro-Wilk test.\n")
+} else {
+  cat("The BMI data appears to be normally distributed based on the Shapiro-Wilk test.\n")
+}
+```
+
+```{r}
+# Assuming your data frame is named stroke.data and "BMI" and "stroke" are the columns of interest
+wilcoxon_test_result <- wilcox.test(bmi ~ stroke, data = stroke.data)
+
+# Print the result
+print(wilcoxon_test_result)
+
+# Check if the p-value is less than 0.05
+if (wilcoxon_test_result$p.value < 0.05) {
+  cat("There is a significant difference in BMI between stroke-affected and non-affected individuals.There is an association between BMI and stroke occurrence\n")
+} else {
+  cat("There is no significant difference in BMI between stroke-affected and non-affected individuals.There is no association between BMI and stroke occurrence\n")
+}
+
+```
+## Question2
+```{r}
+# Random Sampling
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data))  
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+# Excluding samples with age less than 20
+sample_data_filtered <- sample_data[sample_data$age >= 20, ]
+# Creating a contingency table
+cross_table <- table(sample_data_filtered$smoking_status, sample_data_filtered$stroke)
+# Performing Chi-squared test
+chi_square_test <- chisq.test(cross_table)
+# Printing the result
+#print(cross_table)
+print(chi_square_test)
+# Make an inference based on the p-value
+if (chi_square_test$p.value < 0.05) {
+  cat("There is a significant association between smoking status and stroke risk.\n")
+} else {
+  cat("There is no significant association between smoking status and stroke risk.\n")
+}
+```
+## Question3
+
+## age
+```{r}
+# Random Sampling
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data)) 
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+# Performing Shapiro-Wilk test
+shapiro_test_result <- shapiro.test(sample_data$age)
+# Printing the result
+print(shapiro_test_result)
+# Checking if the p-value is less than 0.05
+if (shapiro_test_result$p.value < 0.05) {
+  cat("The Age data is not normally distributed based on the Shapiro-Wilk test.\n")
+} else {
+  cat("The Age data appears to be normally distributed based on the Shapiro-Wilk test.\n")
+}
+```
+```{r}
+# Random Sampling
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data))  
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+# Performing Wilcoxon rank-sum test
+wilcox_test_result <- wilcox.test(age ~ stroke, data = sample_data)
+# Printing the result
+print(wilcox_test_result)
+# Printing association based on p-value
+if (wilcox_test_result$p.value < 0.05) {
+  cat("There is a significant association between age and stroke.\n")
+} else {
+  cat("There is no significant association between age and stroke.\n")
+}
+```
+## gender
+
+```{r}
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data))  
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+contingency_table <- table(sample_data$gender, sample_data$stroke)
+chi_square_test <- chisq.test(contingency_table)
+print(chi_square_test)
+if (chi_square_test$p.value < 0.05) {
+  cat("There is a significant association between gender and stroke risk.\n")
+} else {
+  cat("There is no significant association between gender and stroke risk.\n")
+}
+```
+## logistic regression
+
+```{r}
+# Random Sampling
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data))  # Ensure the sample size is within the valid range
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+
+# Performing Logistic Regression
+logistic_model <- glm(stroke ~ bmi, data = sample_data, family = binomial)
+
+# Printing the model summary
+summary(logistic_model)
+
+```
+
+```{r}
+# Random Sampling
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data))  
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+# Performing Logistic Regression
+logistic_model <- glm(stroke ~ smoking_status, data = sample_data, family = binomial)
+# Printing the model summary
+summary(logistic_model)
+```
+
+```{r}
+# Random Sampling
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data))  
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+# Performing Logistic Regression
+logistic_model_age <- glm(stroke ~ age, data = sample_data, family = binomial)
+# Printing the model summary
+summary(logistic_model_age)
+```
+
+```{r}
+# Random Sampling
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data)) 
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+# Performing Logistic Regression
+logistic_model_gender <- glm(stroke ~ gender, data = sample_data, family = binomial)
+# Printing the model summary
+summary(logistic_model_gender)
+```
+```{r}
+# Random Sampling
+set.seed(123)  # Setting a seed for reproducibility
+sample_size <- min(5000, nrow(stroke.data))
+sample_data <- stroke.data[sample(1:nrow(stroke.data), sample_size), ]
+
+# Exclude samples with age less than 20 for smoking_status
+filtered_smoking_status <- subset(sample_data, !(age < 20 & !is.na(smoking_status)))
+
+# Perform Logistic Regression with filtered smoking_status
+logistic_model_combined <- glm(stroke ~ bmi + smoking_status + age + gender, data = filtered_smoking_status, family = binomial)
+
+# Printing the model summary
+summary(logistic_model_combined)
+```
+
+
